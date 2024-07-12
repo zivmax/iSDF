@@ -35,9 +35,7 @@ The tabletop dataset consists of 5 short trajectories we collect on the Franka m
 
 ## Ground truth SDF generation
 
-Instructions coming soon.
-
-<!-- The sequences are accompanied by ground truth SDF voxel grids with a voxel size of 1cm.
+The sequences are accompanied by ground truth SDF voxel grids with a voxel size of 1cm.
 
 ### ReplicaCAD
 
@@ -73,4 +71,3 @@ Then to load a scene into viewer, run:
 ```
 ./build/viewer  --enable-physics -- /mnt/sda/ScanNet/scans/scene0000_01/mesh.obj
 ```
- -->
