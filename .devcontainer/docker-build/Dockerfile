@@ -18,19 +18,22 @@ RUN apt install -y wget
 RUN apt install -y systemd 
 RUN apt install -y git 
 RUN apt install -y p7zip-full
+RUN apt install -y ffmpeg 
+RUN apt install -y libsm6 
+RUN apt install -y libxext6 
 
 # Clean up to reduce image size
 RUN apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install any dependent packages
-RUN pip config set global.index-url https://mirrors.shanghaitech.edu.cn/pypi/web/simple
-COPY environment.yml ./
-RUN conda env create -f environment.yml
+# RUN pip config set global.index-url https://mirrors.shanghaitech.edu.cn/pypi/web/simple
+COPY env.yml ./
+RUN conda env create -f env.yml
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
 
-RUN rm ./environment.yml
+RUN rm ./env.yml
 
 
