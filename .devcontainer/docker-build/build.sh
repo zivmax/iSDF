@@ -1,1 +1,1 @@
-docker build -t  isdf .
+docker build -t isdf .

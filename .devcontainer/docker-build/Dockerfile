@@ -2,38 +2,35 @@
 FROM pytorch/pytorch:2.2.1-cuda12.1-cudnn8-devel
 
 # Set the working directory in the container
-WORKDIR /workspace
+WORKDIR /app
 
+# Install system packages
 ENV TZ=Asia/Shanghai
 ENV DEBIAN_FRONTEND=noninteractive
-
-RUN sed -i -e 's|http://archive.ubuntu.com/ubuntu|https://mirrors.shanghaitech.edu.cn/ubuntu|g'  \
-	-i -e 's|http://security.ubuntu.com/ubuntu|https://mirrors.shanghaitech.edu.cn/ubuntu|g' \
-	/etc/apt/sources.list
-
 RUN apt update
-RUN apt upgrade -y --fix-missing
 RUN apt install -y curl 
 RUN apt install -y wget 
 RUN apt install -y systemd 
 RUN apt install -y git 
 RUN apt install -y p7zip-full
-RUN apt install -y ffmpeg 
-RUN apt install -y libsm6 
 RUN apt install -y libxext6 
+RUN apt install -y libsm6 
+RUN apt install -y ffmpeg 
 
 # Clean up to reduce image size
 RUN apt clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install any dependent packages
-# RUN pip config set global.index-url https://mirrors.shanghaitech.edu.cn/pypi/web/simple
+# Install dependent packages
 COPY env.yml ./
 RUN conda env create -f env.yml
+RUN rm ./env.yml
+
+# Setting up Git
+RUN git config --global --add safe.directory /workspaces/iSDF
+RUN git config --global --add safe.directory /workspaces/iSDF/ORB_SLAM3_ros
+RUN git config --global user.name zivmax 
+RUN git config --global user.email zivmax@foxmail.com 
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
-
-RUN rm ./env.yml
-
-
