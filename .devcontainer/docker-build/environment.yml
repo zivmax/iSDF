@@ -1,5 +1,6 @@
 name: isdf
 channels:
+  - conda-forge 
   - pytorch
   - nvidia
   - defaults
@@ -254,4 +255,3 @@ dependencies:
       - widgetsnbextension==3.5.1
       - xxhash==2.0.2
       - zipp==3.8.1
-prefix: /opt/conda/envs/isdf

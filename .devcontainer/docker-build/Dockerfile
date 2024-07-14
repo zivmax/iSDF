@@ -8,6 +8,7 @@ WORKDIR /app
 ENV TZ=Asia/Shanghai
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update
+RUN apt upgrade -y --fix-missing
 RUN apt install -y curl 
 RUN apt install -y wget 
 RUN apt install -y systemd 
@@ -22,7 +23,8 @@ RUN apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install dependent packages
-COPY env.yml ./
+RUN conda update -n base conda
+COPY ../../environment.yml ./env.yml
 RUN conda env create -f env.yml
 RUN rm ./env.yml
 
