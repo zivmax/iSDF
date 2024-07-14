@@ -14,25 +14,24 @@ RUN apt install -y wget
 RUN apt install -y systemd 
 RUN apt install -y git 
 RUN apt install -y p7zip-full
-RUN apt install -y libxext6 
-RUN apt install -y libsm6 
 RUN apt install -y ffmpeg 
+RUN apt install -y freeglut3-dev
 
 # Clean up to reduce image size
 RUN apt clean && \
     rm -rf /var/lib/apt/lists/*
-
-# Install dependent packages
-RUN conda update -n base conda
-COPY ../../environment.yml ./env.yml
-RUN conda env create -f env.yml
-RUN rm ./env.yml
 
 # Setting up Git
 RUN git config --global --add safe.directory /workspaces/iSDF
 RUN git config --global --add safe.directory /workspaces/iSDF/ORB_SLAM3_ros
 RUN git config --global user.name zivmax 
 RUN git config --global user.email zivmax@foxmail.com 
+
+# Install dependent packages
+RUN conda update -n base conda
+COPY ../../environment.yml ./env.yml
+RUN conda env update --name base --file env.yml
+RUN rm ./env.yml
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
