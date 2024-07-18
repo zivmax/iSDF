@@ -33,9 +33,12 @@ RUN git config --global user.email zivmax@foxmail.com
 # Install dependent packages
 RUN conda update -n base conda
 COPY ./environment.yml ./env.yml
-# RUN conda env update --name base --file env.yml
 RUN conda env create -f env.yml
+RUN conda init
 RUN rm ./env.yml
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
+
+ENTRYPOINT conda run -n isdf /bin/bash -c 'pip install -e .' && bash
+ 
