@@ -9,7 +9,7 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "conda run -n base /bin/bash -c 'pip install -e .'",
+	"postCreateCommand": "conda run -n isdf /bin/bash -c 'pip install -e .'",
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
