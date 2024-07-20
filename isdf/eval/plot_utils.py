@@ -60,7 +60,7 @@ def load_gt_sdf(gt_sdf_dir):
 
 def get_seq_time(
     exp,
-    data_dir="/home/joe/projects/incSDF/data/ReplicaCAD-seqs/"
+    data_dir="/workspaces/iSDF/data/ReplicaCAD-seqs/"
 ):
     config_dir = exp + "/config.json"
     if os.path.exists(config_dir):
@@ -84,7 +84,7 @@ def get_last_eval_t(ours_root, exp):
     with open(conf_file, 'r') as f:
         config = json.load(f)
 
-    eval_pts_dir = "/home/joe/projects/incSDF/incSDF/data/eval_pts/vox/"
+    eval_pts_dir = "/workspaces/iSDF/data/eval_pts/vox/"
     if config["model"]["frac_time_perception"] == 1.:
         eval_pts_dir += "0.055/"
     elif config["model"]["frac_time_perception"] == 0.75:

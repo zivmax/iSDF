@@ -150,9 +150,9 @@ if __name__ == "__main__":
     scene_name = "apt_2_v1"
     replicacad_path = "/mnt/sda/ReplicaCAD/replica_cad/"
     scene_config = f"{replicacad_path}/configs/scenes/{scene_name}.scene_instance.json"
-    stage_sdf_dir = f"/home/joe/projects/incSDF/data/habitat_sdfs/frl_apartment_stage_1cm/"
-    output_dir = f"/home/joe/projects/incSDF/data/gt_sdfs/{scene_name}/1cm/"
-    mesh_out_dir = f"/home/joe/projects/incSDF/data/gt_sdfs/{scene_name}/"
+    stage_sdf_dir = f"/workspaces/iSDF/data/habitat_sdfs/frl_apartment_stage_1cm/"
+    output_dir = f"/workspaces/iSDF/data/gt_sdfs/{scene_name}/1cm/"
+    mesh_out_dir = f"/workspaces/iSDF/data/gt_sdfs/{scene_name}/"
 
     joint_cfg = {}
     if scene_name == "apt_2_v1":

@@ -463,7 +463,7 @@ def save_info(
 
 # Directories --------------------------------------------
 
-incSDF_root = "/home/joe/projects/incSDF/incSDF/"
+incSDF_root = "/workspaces/iSDF/incSDF/"
 
 save_dir = incSDF_root + "res/figs/slices"
 
