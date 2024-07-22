@@ -229,15 +229,15 @@ def load_params(base_config_file):
         ("replicaCAD", "apt_3_obj", "apt_3"),
         ("replicaCAD", "apt_3_nav", "apt_3"),
 
-        # ScanNet longer sequences
-        ("ScanNet", "scene0010_00", "scene0010_00"),
-        ("ScanNet", "scene0030_00", "scene0030_00"),
-        ("ScanNet", "scene0031_00", "scene0031_00"),
+        # # ScanNet longer sequences
+        # ("ScanNet", "scene0010_00", "scene0010_00"),
+        # ("ScanNet", "scene0030_00", "scene0030_00"),
+        # ("ScanNet", "scene0031_00", "scene0031_00"),
 
-        # ScanNet shorter sequences
-        ("ScanNet", "scene0004_00", "scene0004_00"),
-        ("ScanNet", "scene0005_00", "scene0005_00"),
-        ("ScanNet", "scene0009_00", "scene0009_00"),
+        # # ScanNet shorter sequences
+        # ("ScanNet", "scene0004_00", "scene0004_00"),
+        # ("ScanNet", "scene0005_00", "scene0005_00"),
+        # ("ScanNet", "scene0009_00", "scene0009_00"),
     ]
 
     return base_config, seqs

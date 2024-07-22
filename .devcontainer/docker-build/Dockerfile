@@ -40,5 +40,7 @@ RUN rm ./env.yml
 # Make port 80 available to the world outside this container
 EXPOSE 80
 
+WORKDIR /workspaces/iSDF
+
 ENTRYPOINT conda run -n isdf /bin/bash -c 'pip install -e .' && bash
  
