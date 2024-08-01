@@ -101,16 +101,6 @@ class Trainer():
         return int(self.tot_step_time * self.fps)
 
     def set_scene_properties(self, scene_mesh = None):
-        # if self.live:
-        #     # bounds is axis algined, camera initial pose defines origin
-        #     ax_aligned_box = scene_mesh.bounding_box
-        #     T_extent_to_scene, bounds_extents = \
-        #         trimesh.bounds.oriented_bounds(ax_aligned_box)
-        # else:
-        # bounds_transform is a transformation matrix which moves
-        # the center of the bounding box of the mesh to the origin.
-        # bounds_extents is the extents of the mesh once transformed
-        # with bounds_transform
         if "realsense_franka" in self.dataset_format:
             # define our own workspace bounds 
             T_extent_to_scene = trimesh.transformations.rotation_matrix(np.deg2rad(self.config["workspace"]["rotate_z"]), [0, 0, 1]) # flip workspace
@@ -372,13 +362,6 @@ class Trainer():
         c, r = torch.meshgrid(increments_w, increments_h)
         c, r = c.t(), r.t()
         self.increments_single = torch.stack((r, c), dim=2).view(-1, 2)
-
-        # base radius for integrated PE
-        # norm_dirs_C = self.dirs_C / torch.linalg.norm(
-        #     self.dirs_C, dim=-1, keepdims=True)
-        # dx = torch.sqrt(torch.sum(
-        #     (self.dirs_C[:, 1, 0, :] - self.dirs_C[:, 0, 0, :])**2, -1))
-        # self.pix_radius = dx.item() * 2 / np.sqrt(12)
 
     def set_directions(self):
         self.dirs_C = geometry.transform.ray_dirs_C(
@@ -709,12 +692,6 @@ class Trainer():
             indices_b, indices_h, indices_w = sample.sample_pixels(
                 n_rays, n_frames, self.H, self.W, device=self.device)
         else:
-            # indices_b, indices_h, indices_w = \
-            #     active_sample.active_sample_pixels(
-            #         n_rays, n_frames, self.H, self.W, device=self.device,
-            #         loss_approx=active_loss_approx,
-            #         increments_single=self.increments_single
-            #     )
             raise Exception('Active sampling not currently supported.')
 
         get_masks = active_loss_approx is None
@@ -841,25 +818,6 @@ class Trainer():
                 total_loss_mat, depth_batch, indices_b, indices_h, indices_w,
                 self.W, self.H, self.loss_approx_factor, binary_masks)
 
-        # # # for plot
-        # z_to_euclidean_depth = dirs_C_sample.norm(dim=-1)
-        # ray_target = depth_sample[:, None] - z_vals
-        # ray_target = z_to_euclidean_depth[:, None] * ray_target
-
-        # # apply correction based on angle between ray and normal
-        # costheta = torch.abs(self.cosSim(-dirs_C_sample, norm_sample))
-        # # only apply correction out to truncation distance
-        # sub = self.trunc_distance * (1. - costheta)
-        # normal_target_fs = ray_target - sub[:, None]
-        # # target_normal = ray_target.clone()
-        # target_normal = normal_target_fs
-        # ixs = target_normal < self.trunc_distance
-        # target_normal[ixs] = (ray_target * costheta[:, None])[ixs]
-
-        # self.check_gt_sdf(
-        #     depth_sample, z_vals, dirs_C_sample, pc,
-        #     ray_target, target_sdf, target_normal)
-
         return (
             total_loss,
             losses,
@@ -916,35 +874,17 @@ class Trainer():
                     color="C0", linewidth=lw
                 )
 
-                # print("diffs", target_sdf[i].cpu() - gt_sdf)
                 if j == 2:
                     ax[j].set_xlabel("Distance along ray, d [m]", fontsize=24)
                     ax[j].set_yticks([0, 4, 8])
-                # ax[j].set_ylabel("Signed distance (m)", fontsize=21)
                 ax[j].tick_params(axis='both', which='major', labelsize=24)
-                # ax[j].set_xticks(fontsize=20)
-                # ax[j].set_yticks(fontsize=20)
-                # if j == 0:
-                #     ax[j].legend(fontsize=20)
                 j += 1
 
             fig.text(
                 0.05, 0.5, 'Signed distance [m]',
                 va='center', rotation='vertical', fontsize=24
             )
-            # plt.tight_layout()
             plt.show()
-
-            # intersection = dirs_W[i] * depth_sample[i] + origins[i]
-            # int_pc = trimesh.PointCloud(
-            #     intersection[None, :].cpu(), [255, 0, 0, 255])
-            # scene.add_geometry(int_pc)
-
-            # pts = pc[i].detach().cpu().numpy()
-            # colormap_fn = sdf_util.get_colormap()
-            # col = colormap_fn.to_rgba(gt_sdf, alpha=1., bytes=False)
-            # tm_pc = trimesh.PointCloud(pts, col)
-            # scene.add_geometry(tm_pc)
 
         scene.show()
 
@@ -957,7 +897,6 @@ class Trainer():
 
         if len(self.frames) > self.window_size and self.incremental:
             idxs = self.select_keyframes()
-            # print("selected frame ids", self.frames.frame_id[idxs[:-1]])
         else:
             idxs = np.arange(T_WC_batch.shape[0])
         self.active_idxs = idxs
@@ -984,29 +923,6 @@ class Trainer():
             params = param_group["params"]
             for param in params:
                 param.grad = None
-
-        # if self.do_active:
-        #     sample_pts = self.sample_points(
-        #         depth_batch, T_WC_select, norm_batch=norm_batch,
-        #         active_loss_approx=active_loss_approx)
-
-        #     loss_active, _, _, _ = \
-        #         self.sdf_eval_and_loss(sample_pts, do_avg_loss=False)
-
-        #     loss_active.backward()
-        #     self.optimiser.step()
-        #     for param_group in self.optimiser.param_groups:
-        #         params = param_group["params"]
-        #         for param in params:
-        #             param.grad = None
-
-            # loss_approx = loss_approx[-1].detach().cpu().numpy()
-            # loss_approx_viz = imgviz.depth2rgb(loss_approx)
-            # loss_approx_viz = cv2.cvtColor(loss_approx_viz, cv2.COLOR_RGB2BGR)
-            # loss_approx_viz = cv2.resize(loss_approx_viz, (200, 200),
-            #                              interpolation=cv2.INTER_NEAREST)
-            # cv2.imshow("loss_approx_viz", loss_approx_viz)
-            # cv2.waitKey(1)
 
         step_time = end_timing(start, end)
         time_s = step_time / 1000.
@@ -1072,7 +988,6 @@ class Trainer():
         depth = cv2.resize(depth, (w, h))
         depth_viz = imgviz.depth2rgb(
             depth, min_value=self.min_depth, max_value=self.max_depth)
-        # depth_viz[depth == 0] = [0, 255, 0]
 
         rgbd_vis = np.hstack((image, depth_viz))
 
@@ -1082,12 +997,6 @@ class Trainer():
             T_WC = torch.FloatTensor(T_WC_np).to(self.device)[None, ...]
 
             with torch.set_grad_enabled(False):
-                # efficient depth and normals render
-                # valid_depth = depth != 0.0
-                # depth_sample = torch.FloatTensor(depth).to(self.device)[valid_depth]
-                # max_depth = depth_sample + 0.5  # larger max depth for depth render
-                # dirs_C = self.dirs_C_vis[0, valid_depth.flatten()]
-
                 pc, z_vals = sample.sample_along_rays(
                     T_WC,
                     self.min_depth,
@@ -1123,17 +1032,12 @@ class Trainer():
             surf_normals_C = render.render_normals(
                 T_WC, depth_vals[None, ...], self.sdf_map, self.dirs_C_vis_up)
 
-            # render_depth = torch.zeros(self.H_vis, self.W_vis)
-            # render_depth[valid_depth] = depth_vals.detach().cpu()
-            # render_depth = render_depth.numpy()
             render_depth = depth_vals.view(self.H_vis_up, self.W_vis_up).cpu().numpy()
             render_depth_viz = imgviz.depth2rgb(
                 render_depth, min_value=self.min_depth, max_value=self.max_depth)
 
             surf_normals_C = (- surf_normals_C + 1.0) / 2.0
             surf_normals_C = torch.clip(surf_normals_C, 0., 1.)
-            # normals_viz = torch.zeros(self.H_vis, self.W_vis, 3)
-            # normals_viz[valid_depth] = surf_normals_C.detach().cpu()
             normals_viz = surf_normals_C.view(self.H_vis_up, self.W_vis_up, 3).detach().cpu()
             normals_viz = (normals_viz.numpy() * 255).astype(np.uint8)
 
@@ -1425,17 +1329,10 @@ class Trainer():
 
     def get_sdf_grid(self):
         with torch.set_grad_enabled(False):
-
-            # gt_dist = sdf_util.eval_sdf_interp(
-            #     self.gt_sdf_interp, self.grid_pc.cpu().numpy(),
-            #     handle_oob='fill')
-            # gt_dist = torch.FloatTensor(gt_dist).to(self.device)
-
             sdf = fc_map.chunks(
                 self.grid_pc,
                 self.chunk_size,
                 self.sdf_map,
-                # surf_dists=gt_dist,
             )
 
             dim = self.grid_dim
@@ -1491,7 +1388,6 @@ class Trainer():
         )
         sdf_grid_pc, _ = self.get_sdf_grid_pc(include_gt=False)
         sdf_grid_pc = np.transpose(sdf_grid_pc, (2, 1, 0, 3))
-        # sdf_grid_pc = sdf_grid_pc[:, :, ::-1]  # for replica
         visualisation.sdf_viewer.SDFViewer(
             scene=scene, sdf_grid_pc=sdf_grid_pc,
             colormap=True, surface_cutoff=0.01
@@ -1645,24 +1541,6 @@ class Trainer():
             diff_viz = imgviz.depth2rgb(diff, min_value=0., max_value=0.5)
             diff_viz = diff_viz.reshape(-1, 3)
             viz = np.full(diff_viz.shape, 255, dtype=np.uint8)
-
-            # mask invisible region
-            # if self.incremental:
-            #     frame_ixs = np.arange(int(self.tot_step_time * self.fps))
-            #     sample = self.cached_dataset[frame_ixs]
-            # else:
-            #     sample = self.cached_dataset.get_all()
-            # depth_batch = sample["depth"]
-            # T_WC_batch = sample["T"]
-            # for i in range(len(frames_data.T_WC_batch)):
-            #     T_WC = frames_data.T_WC_batch[i].cpu().numpy()
-            #     depth = frames_data.depth_batch_np[i]
-            #     visible = geometry.frustum.is_visible(
-            #         pc.reshape(-1, 3), T_WC, depth,
-            #         self.H, self.W, self.fx, self.fy, self.cx, self.cy,
-            #         trunc=self.trunc_distance)
-            #     viz[visible] = diff_viz[visible]
-
             viz = viz.reshape(*grid_shape, 3)
             viz = [
                 cv2.resize(np.take(viz, i, self.up_ix), im_size[::-1])
@@ -1678,9 +1556,6 @@ class Trainer():
             angs = []
             for rot in cam_rots:
                 ang = np.arctan2(rot[0, 2], rot[0, 0])
-                # y = - np.sign(range_dim0) * rot[axis_dim0, 2]
-                # x = - np.sign(range_dim1) * rot[axis_dim1, 2]
-                # ang = np.arctan2(x, y)
                 angs.append(ang)
 
             # Add cam markers to predicted sdf slices
@@ -1855,8 +1730,6 @@ class Trainer():
                 ).mean().item() for epsilon in epsilons
             ]
 
-        # eval_time = end_timing(start, end)
-
         res = {
             'av_l1': l1_sdf.item(),
             'binned_l1': bins_loss,
@@ -1891,17 +1764,6 @@ class Trainer():
 
         sdf = sdf.flatten()
         eval_pts = pc.squeeze()
-
-        # # Check evaluation points look correct
-        # scene = self.draw_3D(
-        #     False, False,
-        #     self.frames.T_WC_batch_np,
-        #     draw_cameras=True,
-        #     show_gt_mesh=True)
-        # pc = trimesh.PointCloud(eval_pts.cpu().numpy(), [128, 128, 128, 255])
-        # scene.add_geometry(pc)
-        # scene.show()
-
         return sdf, eval_pts
 
     def eval_sdf_volume(self, samples=20000):
@@ -1922,7 +1784,6 @@ class Trainer():
 
             eval_stage_sdf = self.stage_sdf_interp(eval_pts)
 
-            # discard_pts = eval_pts[eval_stage_sdf <= 0]
             eval_pts = eval_pts[eval_stage_sdf > 0]
 
             min_xy = np.loadtxt(self.seq_dir + 'bounds.txt')
@@ -1932,7 +1793,6 @@ class Trainer():
             px = torch.clamp(px, min=0, max=islands.shape[1] - 1).int()
             py = torch.clamp(py, min=0, max=islands.shape[0] - 1).int()
 
-            # discard2_pts = eval_pts[islands[py, px] == 1]
             eval_pts = eval_pts[islands[py, px] == 0]
 
         with torch.set_grad_enabled(False):
@@ -1940,16 +1800,6 @@ class Trainer():
 
             sdf = self.sdf_map(eval_pts)
             sdf = torch.squeeze(sdf)
-
-        # # Vis evaluation points
-        # mesh_gt = trimesh.load(self.scene_file)
-        # scene = trimesh.Scene(mesh_gt)
-        # pc = trimesh.PointCloud(eval_pts.cpu().numpy(), [0, 255, 0, 255])
-        # pc1 = trimesh.PointCloud(discard_pts.cpu().numpy(), [255, 0, 0, 255])
-        # pc2 = trimesh.PointCloud(discard2_pts.cpu().numpy(), [255, 0, 0, 255])
-        # scene.add_geometry([pc, pc1, pc2])
-        # scene.show()
-
         return sdf, eval_pts
 
     def eval_object_sdf(self, samples=10000):
@@ -2021,8 +1871,6 @@ class Trainer():
             traj_section = traj[int(traj_start_ix): int(traj_end_ix)]
             eval_pts = traj_section[:, [3, 7, 11]]
 
-            # trimesh.PointCloud(eval_pts).show()
-
             gt_sdf, valid = sdf_util.eval_sdf_interp(
                 self.gt_sdf_interp, eval_pts,
                 handle_oob='mask')
@@ -2052,15 +1900,12 @@ class Trainer():
             return pred_chomp_costs, gt_chomp_costs
 
     def eval_mesh(self, samples=200000):
-        # start, end = start_timing()
-
         mesh_gt = trimesh.load(self.scene_file)
         sdf_mesh = self.mesh_rec()
 
         acc, comp = metrics.accuracy_comp(
             mesh_gt, sdf_mesh, samples=samples)
 
-        # eval_time = end_timing(start, end)
         return acc, comp
 
     def sdf_fn(self, pts):
